@@ -1,0 +1,5 @@
+Flask>=3.0,<4
+numpy>=1.26,<3
+scipy>=1.11,<2
+plotly>=5.20,<7
+matplotlib>=3.8,<4

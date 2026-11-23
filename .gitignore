@@ -4,3 +4,10 @@
 .env.*
 __pycache__/
 *.pyc
+node_modules/
+/results/*.zip
+/results/*.html
+/results/synthetic/
+/results/*/backtest.json
+
+/results/
