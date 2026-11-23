@@ -1,0 +1,7 @@
+{
+  "name": "phase-research-terminal",
+  "private": true,
+  "scripts": { "build": "node build.cjs" },
+  "dependencies": { "react": "19.2.5", "react-dom": "19.2.5" },
+  "devDependencies": { "esbuild": "0.21.5" }
+}

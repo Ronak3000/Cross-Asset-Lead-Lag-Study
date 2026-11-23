@@ -19,6 +19,8 @@ from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+from response import load_midpoints, responses, write_curve
+
 
 START = "2025-02-04T15:00:00Z"
 END = "2025-02-04T15:30:00Z"
@@ -160,14 +162,42 @@ def demo():
         replay(directory)
 
 
+def analyze():
+    books = {}
+    for symbol in FEEDS:
+        with (DATA / f"{symbol}.csv").open(newline="", encoding="utf-8") as stream:
+            books[symbol] = load_midpoints(records(stream))
+    start, end = (int(datetime.fromisoformat(t).timestamp()) * 10**9 for t in (START, END))
+    result = []
+    es, spy = FEEDS
+    for source, target in ((es, spy), (spy, es)):
+        for row in responses(books[source], books[target], start, end):
+            result.append(dict(source=source, target=target, **row))
+            print(f"{source} -> {target}  {row['horizon_ms']:4} ms  "
+                  f"{row['post_bps']:+.4f} bp  ({row['events']:,} moves)")
+    directory = DATA.parents[1] / "results" / DATA.name
+    directory.mkdir(parents=True, exist_ok=True)
+    write_curve(result, directory / "response.csv")
+    print(f"Saved {directory / 'response.csv'}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["demo", "estimate", "fetch", "replay"])
-    command = parser.parse_args().command
+    parser.add_argument("command", choices=["demo", "estimate", "fetch", "replay", "analyze", "research", "dashboard", "benchmark"])
+    parser.add_argument("--port", type=int, default=8765, help="local dashboard port")
+    parser.add_argument("--synthetic", action="store_true", help="use generated quotes for research or the dashboard")
+    args = parser.parse_args()
+    command = args.command
     if command == "demo":
         demo()
     elif command == "replay":
         replay()
+    elif command == "analyze":
+        analyze()
+    elif command in ("research", "dashboard", "benchmark"):
+        from research import run
+        run(DATA, START, END, records, dashboard=command == "dashboard", port=args.port, synthetic=args.synthetic,
+            benchmark=command == "benchmark")
     else:
         acquire(command)
 
