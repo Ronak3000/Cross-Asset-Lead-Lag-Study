@@ -15,9 +15,52 @@ python study.py dashboard
 
 Open http://127.0.0.1:8765 after the fit finishes. To use another port, add `--port 8766`. Stop the server with Ctrl+C. To demonstrate the full engine on another machine without market data, use `python study.py dashboard --synthetic`. Both versions work offline once dependencies are installed.
 
+## Develop with React hot reload
+
+Open two PowerShell terminals in the project root. Use Node.js 22.12 or newer for the frontend.
+
+**Terminal 1** starts the FastAPI backend on port 8765 using the project's Python environment.
+
+```powershell
+.\.venv\Scripts\python.exe study.py dashboard
+```
+
+**Terminal 2** starts Vite and React Fast Refresh. Run `npm ci` on first setup and when the lockfile changes.
+
+```powershell
+cd ui
+npm ci
+npm run dev
+```
+
+Open http://127.0.0.1:5173 and edit the JSX in `ui/src/`. Vite forwards `/api` and `/plot.js` to the local backend. For a generated session, add `--synthetic` to the backend command.
+
+## Host an interactive demo on Render Free
+
+The repository includes `render.yaml` for one free Python web service. After the deployment files and current frontend and backend are on your GitHub branch, use **New → Blueprint** in Render, connect that branch, and verify the **Free** plan before applying. The build installs Python and npm dependencies and compiles React. Uvicorn serves both React and FastAPI at the resulting URL, using a seeded synthetic session. Visitors can change the strategy settings and run a fresh simulation without credentials.
+
+The free instance sleeps after 15 minutes of inactivity. Open the demo in advance of an interview to allow time for the instance to wake and the model to fit. Render's included instance hours, bandwidth and build minutes apply. [Free service details](https://render.com/docs/free).
+
+## FastAPI backend
+
+The dashboard command starts both the API and the React client. After the session is ready, open [the dashboard](http://127.0.0.1:8765/) or [Swagger UI](http://127.0.0.1:8765/docs). The OpenAPI schema is available at `/openapi.json`. Swagger UI loads its documentation assets from a CDN. The dashboard serves its scripts locally.
+
+| Request | Purpose |
+| --- | --- |
+| `GET /api/session` | Load the fitted model, benchmarks, replay bars and default backtest. |
+| `POST /api/run` | Rerun the simulation with a JSON configuration. Omitted fields use the simulator defaults. |
+| `GET /api/detail?t=1201` | Inspect quotes around a signal, in seconds from the beginning of the session. |
+
+To launch the historical API directly, use `python -m uvicorn api:create_app --factory --host 127.0.0.1 --port 8765`. Both entry points load the session once per server process. In PowerShell, try changing the per-side fee while the server is running.
+
+```powershell
+$result = Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/api/run -ContentType application/json -Body '{"fee":0.01}'
+$result | Select-Object trades, net
+```
+
 ## React dashboard and benchmarks
 
-The browser UI uses React 19 and Plotly. Flask serves the compiled client locally. For frontend changes, run `npm install --prefix ui` and `npm run build --prefix ui`, then refresh. The committed production bundle lets a fresh Python installation start the dashboard without a Node build. On a fresh checkout, `python portable_demo.py` creates `results/Phase-demo.html` with embedded scripts and synthetic data.
+The browser UI uses React 19 and Plotly. FastAPI serves the compiled client and its JSON API on the same local port through Uvicorn. Use `npm run dev` from `ui/` while editing. Run `npm run build --prefix ui` to refresh the compiled client for the single-server demo. The committed production bundle lets a fresh Python installation start the dashboard without a Node build. On a fresh checkout, `python portable_demo.py` creates `results/Phase-demo.html` with embedded scripts and synthetic data.
 
 Run `python study.py benchmark` in the project folder to reproduce the historical comparisons, or add `--synthetic` to run without purchased data. Open **Benchmarks** to see the model scores, seven execution scenarios, and five timed warm simulations. Each warm timing covers signal generation, fills, costs, and ledger construction with quotes and parameters already in memory. Machine timings vary between runs.
 

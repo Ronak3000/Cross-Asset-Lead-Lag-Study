@@ -53,7 +53,7 @@ class Session:
         return result
 
 
-def run(directory, start_iso, end_iso, reader, dashboard=False, port=8765, synthetic=False, benchmark=False):
+def prepare(directory, start_iso, end_iso, reader, synthetic=False, benchmark=False):
     start, end = (int(datetime.fromisoformat(s).timestamp()) * SEC for s in (start_iso, end_iso))
     if synthetic:
         from sample_session import sample_books
@@ -73,54 +73,19 @@ def run(directory, start_iso, end_iso, reader, dashboard=False, port=8765, synth
         json.dump(result, f, indent=2)
     print(f"Held-out trades: {result['trades']:,} | Net USD {result['net']:.2f} | "
           f"Hawkes half-life: {session.fit['half_life_ms']} ms", flush=True)
-    if benchmark or dashboard:
+    comparisons = None
+    if benchmark:
         from benchmarks import measure
         comparisons = measure(session)
         (output / "benchmarks.json").write_text(json.dumps(comparisons, indent=2), encoding="utf-8")
         print(f"Cross-asset gain over within-asset Hawkes: {comparisons['incremental_gain']:.5f} nats/event", flush=True)
-        if dashboard:
-            serve(session, result, port, comparisons)
+    return session, result, comparisons
 
 
-def serve(session, initial, port, comparisons):
-    from flask import Flask, jsonify, request, send_from_directory
-    from plotly.offline import get_plotlyjs
+def run(directory, start_iso, end_iso, reader, dashboard=False, port=8765, synthetic=False, benchmark=False):
+    prepared = prepare(directory, start_iso, end_iso, reader, synthetic, benchmark or dashboard)
+    if dashboard:
+        import uvicorn
+        from api import dashboard_app
 
-    static = Path(__file__).resolve().parent / "ui"
-    app = Flask(__name__, static_folder=str(static), static_url_path="/ui")
-    app.config["MAX_CONTENT_LENGTH"] = 4096
-    chart = session.chart(session.split//SEC, session.duration//SEC, 1)
-    bundle = get_plotlyjs()
-
-    @app.get("/")
-    def index():
-        return send_from_directory(static, "index.html")
-
-    @app.get("/plot.js")
-    def plot():
-        return app.response_class(bundle, mimetype="application/javascript")
-
-    @app.get("/api/session")
-    def view():
-        return jsonify(start=session.start//SEC, split=session.split//SEC, end=session.duration//SEC, synthetic=session.synthetic,
-                       model=session.fit, result=initial, bars=chart, benchmarks=comparisons)
-
-    @app.post("/api/run")
-    def replay():
-        try:
-            body = request.get_json()
-            if not isinstance(body, dict):
-                raise ValueError("Expected a settings object")
-            return jsonify(session.run(Settings(**body)))
-        except (ValueError, TypeError) as exc:
-            return jsonify(error=str(exc)), 400
-
-    @app.get("/api/detail")
-    def detail():
-        second = request.args.get("t", type=float)
-        if second is None or not session.split/SEC <= second < session.duration/SEC:
-            return jsonify(error="Choose a time in the evaluation window"), 400
-        return jsonify(session.detail(second))
-
-    print(f"Open http://127.0.0.1:{port}", flush=True)
-    app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)
+        uvicorn.run(dashboard_app(*prepared), host="127.0.0.1", port=port)
