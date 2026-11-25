@@ -1,0 +1,103 @@
+{
+  "models": [
+    {
+      "name": "Constant Poisson",
+      "test_ll": 51586.10947673769,
+      "gain": 0.0,
+      "half_ms": null
+    },
+    {
+      "name": "Within-asset Hawkes",
+      "test_ll": 74995.40750047105,
+      "gain": 0.7996617484366111,
+      "half_ms": 1
+    },
+    {
+      "name": "Cross-asset Hawkes",
+      "test_ll": 75311.01701331358,
+      "gain": 0.8104429711203078,
+      "half_ms": 1
+    }
+  ],
+  "incremental_gain": 0.010781222683696686,
+  "scenarios": [
+    {
+      "name": "0 ms feed",
+      "signals": 10336,
+      "attempts": 4237,
+      "trades": 4237,
+      "gross": -146.5799999999939,
+      "net": -172.00199999999484,
+      "net_per_trade": -0.04059523247580714
+    },
+    {
+      "name": "2 ms feed",
+      "signals": 9983,
+      "attempts": 4181,
+      "trades": 4181,
+      "gross": -145.9899999999932,
+      "net": -171.0759999999941,
+      "net_per_trade": -0.04091748385553554
+    },
+    {
+      "name": "4 ms feed",
+      "signals": 8823,
+      "attempts": 4033,
+      "trades": 4033,
+      "gross": -161.299999999997,
+      "net": -185.4979999999979,
+      "net_per_trade": -0.04599504091247158
+    },
+    {
+      "name": "8 ms feed",
+      "signals": 6297,
+      "attempts": 3195,
+      "trades": 3195,
+      "gross": -132.379999999995,
+      "net": -151.5499999999957,
+      "net_per_trade": -0.047433489827854676
+    },
+    {
+      "name": "12 ms feed",
+      "signals": 6605,
+      "attempts": 3251,
+      "trades": 3251,
+      "gross": -139.77999999999508,
+      "net": -159.2859999999958,
+      "net_per_trade": -0.04899600123038936
+    },
+    {
+      "name": "Filter disabled",
+      "signals": 12032,
+      "attempts": 4659,
+      "trades": 4659,
+      "gross": -189.48999999999455,
+      "net": -217.44399999999558,
+      "net_per_trade": -0.046671817986691476
+    },
+    {
+      "name": "Passive entry",
+      "signals": 8823,
+      "attempts": 6582,
+      "trades": 0,
+      "gross": 0,
+      "net": 0,
+      "net_per_trade": null
+    }
+  ],
+  "train_arrivals": 61862,
+  "test_arrivals": 29274,
+  "runtime": {
+    "samples_ms": [
+      313.8213999918662,
+      309.63159998646006,
+      307.6899999869056,
+      288.47299999324605,
+      280.47369996784255
+    ],
+    "median_ms": 307.6899999869056,
+    "python": "3.11.3",
+    "platform": "Windows AMD64"
+  },
+  "synthetic": false
+}

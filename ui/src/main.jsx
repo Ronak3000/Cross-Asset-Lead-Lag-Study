@@ -1,6 +1,7 @@
 import React,{useEffect,useRef,useState} from "react";
 import {createRoot} from "react-dom/client";
 import {Markets} from "./charts";
+import {Archive} from "./archive";
 import {Benchmarks,Fills,Model} from "./research";
 import {cash,demo,loadSession,number,simulate} from "./data";
 
@@ -35,7 +36,7 @@ function Controls({session,onRun,busy}){
     <button className="reset" type="button" onClick={reset}>Restore defaults</button></fieldset>
     <div className="foot">{demo?"Three recorded synthetic runs. Fees and impact are recalculated in your browser.":"One SPY share per position. ES supplies the signal. Evaluation uses the final ten minutes."}</div></form>;
 }
-function App(){
+function Simulator({onArchive}){
   const [session,setSession]=useState(null),[result,setResult]=useState(null),[tab,setTab]=useState("market"),
     [status,setStatus]=useState(""),[busy,setBusy]=useState(false);
   const running=useRef(false);
@@ -44,12 +45,16 @@ function App(){
     try{const r=await simulate(config,scenario);setResult(r);setStatus("Replay complete · "+number(r.signals)+" signals · "+number(r.missed)+" missed entries · "+r.unclosed+" open at end");}
     catch(e){setStatus(e.message);}finally{running.current=false;setBusy(false);}}
   return <><header><div className="brand"><span className="brandmark" aria-hidden="true"><i/><i/><i/></span>Phase<span className="wordmark">/ terminal</span></div>
-    <nav aria-label="Research views">{Object.entries(tabs).map(([id,name])=><button key={id} data-tab={id} aria-current={tab===id?"page":undefined} onClick={()=>setTab(id)}>{name}</button>)}</nav>
+    <nav aria-label="Research views">{onArchive&&<button onClick={onArchive}>Session records</button>}{Object.entries(tabs).map(([id,name])=><button key={id} data-tab={id} aria-current={tab===id?"page":undefined} onClick={()=>setTab(id)}>{name}</button>)}</nav>
     <span className="connection"><i className="dot"/>{session?.synthetic?"Synthetic demo":"Historical replay"}</span></header>
     {session?<main><section className="heading"><div><div className="eyebrow"><b className="shortline"/> MICROSTRUCTURE RESEARCH</div>
       <h1>Cross-asset <span>lead–lag</span></h1><p>E-mini S&amp;P 500 futures <b>×</b> SPDR S&amp;P 500 ETF</p></div><div className="date"><label>REPLAY WINDOW</label>
         <strong>{session.synthetic?"Generated session":"04 FEB 2025"}</strong><small>15:20 — 15:30 UTC</small></div></section>
     <Stats session={session} result={result}/><div className="work"><div className="views">{tab==="market"?<Markets session={session} result={result}/>:tab==="model"?<Model session={session}/>:tab==="bench"?<Benchmarks session={session}/>:<Fills session={session} result={result}/>}</div>
     <aside><Controls session={session} onRun={run} busy={busy}/><div role="status" id="status">{status}</div></aside></div></main>:<main role="status">{status||"Loading session…"}</main>}</>;
+}
+function App(){
+  const [archive,setArchive]=useState(!demo);
+  return archive ? <Archive onSimulator={()=>setArchive(false)}/> : <Simulator onArchive={demo?null:()=>setArchive(true)}/>;
 }
 createRoot(document.getElementById("root")).render(<App/>);

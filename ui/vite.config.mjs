@@ -24,6 +24,6 @@ export default defineConfig({
     host: "127.0.0.1",
     port: 5173,
     strictPort: true,
-    proxy: { "/api": backend, "/plot.js": backend },
+    proxy: { "/api": backend, "/plot.js": backend, "/archive": backend },
   },
 });
