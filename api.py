@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.routing import APIRoute
+from fastapi.staticfiles import StaticFiles
 from plotly.offline import get_plotlyjs
 from pydantic import BaseModel, ConfigDict
 
@@ -52,6 +53,9 @@ def dashboard_app(session, initial, comparisons):
                   description="Inspect a fitted ES–SPY session and replay execution scenarios.")
     app.router.route_class = SmallRequestRoute
     ui = Path(__file__).resolve().parent / "ui"
+    archive = ui.parent / "archive"
+    if archive.is_dir():
+        app.mount("/archive", StaticFiles(directory=archive), name="archive")
     plotly_js = Response(get_plotlyjs(), media_type="application/javascript")
     snapshot = JSONResponse(dict(start=session.start // SEC, split=session.split // SEC,
                                  end=session.duration // SEC, synthetic=session.synthetic,

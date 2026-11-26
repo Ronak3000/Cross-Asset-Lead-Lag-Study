@@ -2,6 +2,19 @@
 
 A local research terminal for comparing ES futures and SPY, modelling signed trade arrivals, and testing whether a short-lived price gap survives routing latency, the bid–ask spread and fees.
 
+## Historical dashboard
+
+[Open the published historical dashboard](https://phase-es-spy-research.mysticmill6.chatgpt.site)
+
+The opening screen lets you switch between two recorded 10:00–10:30 New York sessions. **Overview** charts one-second midpoint candles and the two directional response curves. **Arrivals** and **Benchmarks** show the fitted model and held-out comparisons. **Executions** includes each simulated round trip and a fee sensitivity control. **Market records** pages through the original Databento fields and downloads the complete feed as a gzip-compressed CSV. The FastAPI dashboard also offers the execution simulator.
+
+| Session | Futures records | SPY records | Simulated trades | Net simulated P&L |
+| --- | ---: | ---: | ---: | ---: |
+| 2025-02-04 · ESH5 | 565,130 | 216,110 | 1,230 | −$34.06 |
+| 2026-11-23 · ESZ6 | 1,802,570 | 526,742 | 4,033 | −$185.50 |
+
+The dashboard reads the versioned files under `archive/`. Each session includes model parameters, all benchmark scenarios, the backtest with its full ledger, midpoint candles and the event-study CSV. Gzip members reconstruct each original feed in manifest order. The manifest includes the uncompressed SHA-256 for each CSV. Run `python publish_records.py` to rebuild the archive from the matching local `data/` and `results/` directories.
+
 ## Open the terminal
 
 In the downloaded project bundle, open **Phase-demo.html** directly in Chrome or Edge for a portable synthetic presentation. This version has three precomputed execution scenarios. You can switch scenarios, inspect trades, and recalculate fees and impact in the browser. The synthetic generator intentionally plants a futures lead. Only the Python terminal reads the historical files and runs new execution paths.
@@ -84,6 +97,16 @@ Run `python study.py research` to regenerate the historical Hawkes parameters an
 Model reference: [Bacry, Mastromatteo & Muzy, Hawkes Processes in Finance](https://arxiv.org/abs/1502.04592).
 
 ## First session
+
+To repeat the comparison for November 23, 2026, run the following from the project folder:
+
+```powershell
+.\.venv\Scripts\python.exe study.py repeat --date 2026-11-23 --contract ESZ6 --max-estimate 0.50
+```
+
+Enter your key at the hidden terminal prompt. The command targets 10:00–10:30 New York time. It waits for the window to close and for both MBP-1 feeds to cover it under your account, then requests a cost estimate. The optional estimate limit authorizes the missing downloads only if the combined estimate is within the limit. Omit the limit to confirm interactively. Use Ctrl+C to stop waiting. Completed files are reused on the next run. The command writes the new session to its own directory, calculates the full response curve and prints both directions at 5 ms alongside the February baseline.
+
+### Baseline window
 
 February 4, 2025, 10:00–10:30 a.m. New York time (15:00–15:30 UTC).
 
