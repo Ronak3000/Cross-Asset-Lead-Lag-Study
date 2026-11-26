@@ -6,12 +6,13 @@ A local research terminal for comparing ES futures and SPY, modelling signed tra
 
 [Open the published historical dashboard](https://phase-es-spy-research.mysticmill6.chatgpt.site)
 
-The opening screen lets you switch between two recorded 10:00–10:30 New York sessions. **Overview** charts one-second midpoint candles and the two directional response curves. **Arrivals** and **Benchmarks** show the fitted model and held-out comparisons. **Executions** includes each simulated round trip and a fee sensitivity control. **Market records** pages through the original Databento fields and downloads the complete feed as a gzip-compressed CSV. The FastAPI dashboard also offers the execution simulator.
+The local dashboard lets you switch between three recorded 10:00–10:30 New York sessions. **Overview** charts one-second midpoint candles and the two directional response curves. **Arrivals** and **Benchmarks** show the fitted model and held-out comparisons. **Executions** includes each simulated round trip and a fee sensitivity control. **Market records** pages through the original Databento fields and downloads the complete feed as a gzip-compressed CSV. The FastAPI dashboard also offers the execution simulator.
 
 | Session | Futures records | SPY records | Simulated trades | Net simulated P&L |
 | --- | ---: | ---: | ---: | ---: |
 | 2025-02-04 · ESH5 | 565,130 | 216,110 | 1,230 | −$34.06 |
 | 2026-11-23 · ESZ6 | 1,802,570 | 526,742 | 4,033 | −$185.50 |
+| 2026-11-25 · ESZ6 | 2,180,854 | 645,952 | 4,145 | −$207.12 |
 
 The dashboard reads the versioned files under `archive/`. Each session includes model parameters, all benchmark scenarios, the backtest with its full ledger, midpoint candles and the event-study CSV. Gzip members reconstruct each original feed in manifest order. The manifest includes the uncompressed SHA-256 for each CSV. Run `python publish_records.py` to rebuild the archive from the matching local `data/` and `results/` directories.
 
