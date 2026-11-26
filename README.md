@@ -4,6 +4,8 @@ A local research terminal for comparing ES futures and SPY, modelling signed tra
 
 ## Historical dashboard
 
+[Open the published historical dashboard](https://phase-es-spy-research.mysticmill6.chatgpt.site)
+
 The opening screen lets you switch between two recorded 10:00–10:30 New York sessions. **Overview** charts one-second midpoint candles and the two directional response curves. **Arrivals** and **Benchmarks** show the fitted model and held-out comparisons. **Executions** includes each simulated round trip and a fee sensitivity control. **Market records** pages through the original Databento fields and downloads the complete feed as a gzip-compressed CSV. The FastAPI dashboard also offers the execution simulator.
 
 | Session | Futures records | SPY records | Simulated trades | Net simulated P&L |
