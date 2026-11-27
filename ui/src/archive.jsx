@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {Card, Plot, Segments, mint, lilac} from "./charts";
 import {Benchmarks, Model} from "./research";
 import {cash, exportCsv, number} from "./data";
+import {KalmanStudy} from "./kalman";
 
 const base = new URL("archive/", document.baseURI);
 const pageSize = 50;
@@ -144,9 +145,19 @@ function Historical({session, sessions, select, view}) {
 export function Archive({onSimulator}) {
   const {data:sessions,error}=useFile(new URL("sessions.json", base).href,json);
   const [id,select]=useState(""),[view,setView]=useState("Overview");
+  const [kalman,setKalman]=useState(()=>location.hash==="#kalman");
+  useEffect(()=>{
+    const change=()=>setKalman(location.hash==="#kalman");
+    window.addEventListener("hashchange",change);
+    return ()=>window.removeEventListener("hashchange",change);
+  },[]);
   const session=sessions?.find(s=>s.id===id)||sessions?.[0];
   return <><header><div className="brand"><span className="brandmark" aria-hidden="true"><i/><i/><i/></span>Phase</div>
-    <nav aria-label="Historical research">{views.map(v=><button key={v} aria-current={view===v?"page":undefined} onClick={()=>setView(v)}>{v}</button>)}</nav>
-    {!window.PHASE_STATIC&&<button onClick={onSimulator}>Simulator</button>}</header>
-    {session?<Historical key={session.id} session={session} sessions={sessions} select={select} view={view}/>:<main role="status">{error||"Loading historical sessions…"}</main>}</>;
+    <nav className="study-links" aria-label="Research studies">
+      <a href="#lead-lag" aria-current={!kalman?"page":undefined}>ES–SPY lead–lag</a>
+      <a href="#kalman" aria-current={kalman?"page":undefined}>Kalman pairs</a>
+    </nav>
+    {!kalman&&!window.PHASE_STATIC&&<button onClick={onSimulator}>Simulator</button>}</header>
+    {kalman?<KalmanStudy/>:<><nav className="archive-tabs" aria-label="Historical research">{views.map(v=><button key={v} aria-current={view===v?"page":undefined} onClick={()=>setView(v)}>{v}</button>)}</nav>
+    {session?<Historical key={session.id} session={session} sessions={sessions} select={select} view={view}/>:<main role="status">{error||"Loading historical sessions…"}</main>}</>}</>;
 }

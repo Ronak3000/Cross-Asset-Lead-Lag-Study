@@ -4,7 +4,7 @@ A local research terminal for comparing ES futures and SPY, modelling signed tra
 
 ## Historical dashboard
 
-[Open the published historical dashboard](https://phase-es-spy-research.mysticmill6.chatgpt.site)
+[Open the research dashboard on Vercel](https://cross-asset-lead-lag-study.vercel.app/)
 
 The local dashboard lets you switch between three recorded 10:00–10:30 New York sessions. **Overview** charts one-second midpoint candles and the two directional response curves. **Arrivals** and **Benchmarks** show the fitted model and held-out comparisons. **Executions** includes each simulated round trip and a fee sensitivity control. **Market records** pages through the original Databento fields and downloads the complete feed as a gzip-compressed CSV. The FastAPI dashboard also offers the execution simulator.
 
@@ -15,6 +15,12 @@ The local dashboard lets you switch between three recorded 10:00–10:30 New Yor
 | 2026-11-25 · ESZ6 | 2,180,854 | 645,952 | 4,145 | −$207.12 |
 
 The dashboard reads the versioned files under `archive/`. Each session includes model parameters, all benchmark scenarios, the backtest with its full ledger, midpoint candles and the event-study CSV. Gzip members reconstruct each original feed in manifest order. The manifest includes the uncompressed SHA-256 for each CSV. Run `python publish_records.py` to rebuild the archive from the matching local `data/` and `results/` directories.
+
+## Kalman pairs study
+
+Choose **Kalman pairs** in the dashboard, or open `/#kalman` directly. This study follows the [original Python implementation](https://github.com/Ronak3000/alpha-research-kalman/tree/a6a77df3cdc4308551421d02cbb5f332c0e46d76). Use the stock-pair selector to compare PEP/KO, XOM/CVX, JPM/BAC, V/MA, or HD/LOW with the same signal settings. Each pair uses 1,006 paired daily adjusted closes from Yahoo Finance, from January 2, 2020 through December 29, 2023. The model fits the first stock using the second as the hedge. Change the z-score lookback or entry threshold to replay the signals in the browser. The P&L chart tracks changes in the fitted residual net of a position-change cost. It does not account for cash flows from rebalancing both stock positions.
+
+The frontend bundles the daily fitted hedge ratios and residuals. To refresh these historical estimates, run `python kalman_snapshot.py` from the repository root, then `npm run build --prefix ui`. Viewing or replaying this study requires no API key.
 
 ## Open the terminal
 
