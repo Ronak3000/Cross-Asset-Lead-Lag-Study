@@ -46,7 +46,15 @@ def snapshot(target, reference):
         covariance = (np.eye(2) - np.outer(gain, h)) @ covariance
         beta.append(float(state[1]))
         spread.append(float(target[day] - h @ state))
-    return dict(dates=dates, beta=beta, spread=spread)
+    target_close = np.array([target[day] for day in dates])
+    reference_close = np.array([reference[day] for day in dates])
+    target_returns = np.diff(target_close) / target_close[:-1]
+    reference_returns = np.diff(reference_close) / reference_close[:-1]
+    correlation = None
+    if np.ptp(target_returns) > 0 and np.ptp(reference_returns) > 0:
+        correlation = float(np.corrcoef(target_returns, reference_returns)[0, 1])
+    return dict(dates=dates, beta=beta, spread=spread, targetClose=target_close.tolist(),
+                referenceClose=reference_close.tolist(), dailyReturnCorrelation=correlation)
 
 
 def build_catalog(load_chart=daily_chart):

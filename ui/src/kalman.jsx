@@ -1,5 +1,5 @@
 import React, {useMemo, useState} from "react";
-import {Card, Plot, lilac, mint} from "./charts";
+import {Card, Plot, Segments, lilac, mint} from "./charts";
 import {cash} from "./data";
 import {replaySpread} from "./kalman-model.mjs";
 import pairs from "./kalman-snapshot.json";
@@ -9,6 +9,32 @@ const dateAxis = {type:"date", tickformat:"%b %Y"};
 
 function trace(name, dates, values, color) {
   return {type:"scatter", mode:"lines", name, x:dates, y:values, line:{color, width:1.6}};
+}
+
+const returnFormat = new Intl.NumberFormat("en-US", {
+  style:"percent", maximumFractionDigits:1, minimumFractionDigits:1, signDisplay:"exceptZero"
+});
+
+function PriceComparison({study}) {
+  const [scale,setScale] = useState("indexed");
+  const {dates,target,reference,targetClose,referenceClose,dailyReturnCorrelation} = study;
+  const indexed = scale === "indexed";
+  const stocks = [[target,targetClose,mint],[reference,referenceClose,lilac]];
+  const traces = stocks.map(([symbol,closes,color]) => ({
+    ...trace(symbol, dates, indexed ? closes.map(price=>price / closes[0] * 100) : closes, color),
+    hovertemplate: symbol + (indexed ? " %{y:.2f}" : " $%{y:.2f}") + "<extra></extra>"
+  }));
+  return <Card title="Stock performance" foot="Returns cover the full sample. Correlation measures how closely the two daily percentage returns moved together, on a scale from −1 to +1.">
+    <div className="charttools"><div className="legend"><i/>{target}<i className="purple"/>{reference}</div>
+      <Segments label="Price scale" value={scale} onChange={setScale} items={[["indexed","Start at 100"],["price","Adjusted $"]]}/>
+    </div>
+    <Plot id="kalman-prices" traces={traces} xaxis={dateAxis}
+      yaxis={{title:{text:indexed ? "Index (first close = 100)" : "Adjusted close (USD)"}}}/>
+    <dl className="pair-metrics">{stocks.map(([symbol,closes])=><div key={symbol}><dt>{symbol} return</dt>
+      <dd>{returnFormat.format(closes.at(-1) / closes[0] - 1)}</dd></div>)}
+      <div><dt>Daily return correlation</dt><dd>{dailyReturnCorrelation?.toFixed(2) ?? "Undefined"}</dd></div>
+    </dl>
+  </Card>;
 }
 
 export function KalmanStudy() {
@@ -29,6 +55,7 @@ export function KalmanStudy() {
       <select value={pair} onChange={e=>setPair(e.target.value)}>{Object.keys(pairs).map(key=><option key={key} value={key}>{key.replace("/", " / ")}</option>)}</select>
     </label></section>
     <div className="work kalman-work"><div className="views">
+      <PriceComparison study={pairs[pair]}/>
       <Card title={`${target} hedge ratio`} foot={`The filter updates the intercept and slope after each close. The slope estimates the number of ${hedgeUnits} in the hedge.`}>
         <Plot id="kalman-hedge" traces={[trace("Hedge ratio", dates, beta, mint)]} xaxis={dateAxis} yaxis={{title:{text:hedgeUnits}}}/>
       </Card>

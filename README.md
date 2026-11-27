@@ -20,7 +20,9 @@ The dashboard reads the versioned files under `archive/`. Each session includes 
 
 Choose **Kalman pairs** in the dashboard, or open `/#kalman` directly. This study follows the [original Python implementation](https://github.com/Ronak3000/alpha-research-kalman/tree/a6a77df3cdc4308551421d02cbb5f332c0e46d76). Use the stock-pair selector to compare PEP/KO, XOM/CVX, JPM/BAC, V/MA, or HD/LOW with the same signal settings. Each pair uses 1,006 paired daily adjusted closes from Yahoo Finance, from January 2, 2020 through December 29, 2023. The model fits the first stock using the second as the hedge. Change the z-score lookback or entry threshold to replay the signals in the browser. The P&L chart tracks changes in the fitted residual net of a position-change cost. It does not account for cash flows from rebalancing both stock positions.
 
-The frontend bundles the daily fitted hedge ratios and residuals. To refresh these historical estimates, run `python kalman_snapshot.py` from the repository root, then `npm run build --prefix ui`. Viewing or replaying this study requires no API key.
+The Stock performance chart overlays both companies’ adjusted closes. Choose **Start at 100** to compare cumulative performance from the first paired close, or **Adjusted $** to see both adjusted share prices. The figures below the chart show each stock’s full-period return and the Pearson correlation of their daily percentage returns.
+
+The frontend bundles the paired adjusted closes, fitted hedge ratios and residuals. To refresh these historical estimates, run `python kalman_snapshot.py` from the repository root, then `npm run build --prefix ui`. Viewing or replaying this study requires no API key.
 
 ## Open the terminal
 
