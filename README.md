@@ -51,6 +51,17 @@ Open http://127.0.0.1:5173 and edit the JSX in `ui/src/`. Vite forwards `/api` a
 
 ## Host an interactive demo on Render Free
 
+### Split deployment with a Vercel frontend
+
+1. Push the deployment files to GitHub. In [Vercel](https://vercel.com/new), import this repository under your personal Hobby account. Use the repository root (`.`) and the **Other** framework preset. Leave install, build and output overrides off. Click **Deploy** with `RENDER_API_ORIGIN` unset to publish all three historical sessions immediately.
+2. In [Render](https://dashboard.render.com/), choose **New → Blueprint**, connect the repository, select `main` and apply the root `render.yaml` on the **Free** plan. Once the service is live, open `/api/session` at its public URL and look for the JSON field `synthetic` set to `true`.
+3. In the Vercel project's **Settings → Environment Variables**, add `RENDER_API_ORIGIN` for Production and, if desired, Preview. Use the actual HTTPS Render origin without a path. Redeploy the frontend with that variable to enable the simulator.
+4. Open the Vercel URL. In **Overview**, switch between the three historical dates. In **Market records**, choose SPY and page through the quotes. In **Simulator**, select **Run backtest** to exercise the Render API. The historical pages, Plotly and all archived files load from Vercel. Only the simulator calls Render through the same-origin `/api/*` proxy. Both hosts work without a Databento key.
+
+For a local check of the static files, run `npm ci --prefix ui --include=dev`, then `npm run build:vercel --prefix ui` and `python -m http.server 8080 --directory .vercel/output/static` from the repository root. Open `http://localhost:8080`. The Python static server serves the archive. Vercel applies the production proxy rules in `.vercel/output/config.json` at deployment.
+
+### Single-service deployment
+
 The repository includes `render.yaml` for one free Python web service. After the deployment files and current frontend and backend are on your GitHub branch, use **New → Blueprint** in Render, connect that branch, and verify the **Free** plan before applying. The build installs Python and npm dependencies and compiles React. Uvicorn serves both React and FastAPI at the resulting URL, using a seeded synthetic session. Visitors can change the strategy settings and run a fresh simulation without credentials.
 
 The free instance sleeps after 15 minutes of inactivity. Open the demo in advance of an interview to allow time for the instance to wake and the model to fit. Render's included instance hours, bandwidth and build minutes apply. [Free service details](https://render.com/docs/free).

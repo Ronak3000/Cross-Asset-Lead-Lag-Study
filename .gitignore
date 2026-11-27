@@ -11,3 +11,4 @@ node_modules/
 /results/*/backtest.json
 
 /results/
+/.vercel/
